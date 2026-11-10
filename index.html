@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="my" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YADANAR - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Padauk', sans-serif; }</style>
+</head>
+<body class="h-full text-slate-100 flex flex-col">
+
+    <!-- Header (URL Input Box & Save Button ဖယ်ရှားပြီး) -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-user-shield text-2xl text-amber-500"></i>
+            <div>
+                <h1 class="text-xl font-bold">YADANAR - ရောင်းချသူ စာရင်းထိန်းစနစ်</h1>
+                <p class="text-xs text-slate-400">Admin Dashboard</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-700 space-x-6">
+            <button onclick="switchTab('orders')" id="tab-orders" class="pb-2 border-b-2 border-amber-500 font-bold text-amber-500 text-sm">အော်ဒါစာရင်းများ</button>
+            <button onclick="switchTab('debts')" id="tab-debts" class="pb-2 border-b-2 border-transparent text-slate-400 text-sm">အကြွေးစာရင်း (စုစုပေါင်းနှင့် တစ်ဦးချင်း)</button>
+            <button onclick="switchTab('menuManager')" id="tab-menuManager" class="pb-2 border-b-2 border-transparent text-slate-400 text-sm">မီနူး စီမံရန် (ဖိုင်ပုံတင်ရန်နှင့် အဖွင့်/အပိတ်)</button>
+        </div>
+
+        <!-- Section 1: Orders -->
+        <section id="section-orders" class="space-y-4">
+            <h2 class="text-lg font-bold text-amber-400">ဝင်ရောက်ထားသော အော်ဒါများ</h2>
+            <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900 text-slate-400 uppercase font-bold">
+                        <tr>
+                            <th class="p-3">နေ့စွဲ</th>
+                            <th class="p-3">အော်ဒါ ID</th>
+                            <th class="p-3">ဝယ်သူ ကုဒ်/အမည်</th>
+                            <th class="p-3">အခန်း</th>
+                            <th class="p-3">မှာယူသော ဟင်းပွဲများ</th>
+                            <th class="p-3">စုစုပေါင်း (THB)</th>
+                            <th class="p-3">ငွေချေစနစ်</th>
+                            <th class="p-3">မှတ်ချက်</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTable" class="divide-y divide-slate-700"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 2: Debt Summary -->
+        <section id="section-debts" class="space-y-4 hidden">
+            <h2 class="text-lg font-bold text-red-400">ဝယ်သူတစ်ဦးချင်းစီ၏ အကြွေးစုစုပေါင်း စာရင်း (လက်ကျန်ရှင်းရန်)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="debtCardsGrid"></div>
+        </section>
+
+        <!-- Section 3: Menu Manager -->
+        <section id="section-menuManager" class="space-y-4 hidden">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-amber-400">မီနူးများ အဖွင့်/အပိတ် နှင့် ပုံဖိုင် တိုက်ရိုက်တင်ရန်</h2>
+                <div class="flex gap-2">
+                    <button onclick="addNewMenuRow()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> မီနူးအသစ် ထည့်မည်
+                    </button>
+                    <button onclick="saveMenuToSheet()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Google Sheet သို့ သိမ်းမည်
+                    </button>
+                </div>
+            </div>
+            <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-x-auto p-4">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900 text-slate-400 uppercase font-bold">
+                        <tr>
+                            <th class="p-3">အခြေအနေ (အဖွင့်/အပိတ်)</th>
+                            <th class="p-3">ကုဒ် (Code)</th>
+                            <th class="p-3">ဟင်းပွဲအမည်</th>
+                            <th class="p-3">ဈေးနှုန်း (THB)</th>
+                            <th class="p-3">ပုံရွေးချယ်ရန် (Image File)</th>
+                            <th class="p-3">Tag (အမျိုးအစား)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menuManageTable" class="divide-y divide-slate-700"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 👉 သင့် Google Sheet Web App URL အား အသေ (Hardcode) ထည့်သွင်းထားပါသည်
+        const adminSheetUrl = "https://script.google.com/macros/s/AKfycbz7zFylfhFXtNy_VYv6IOpFNeXVfQI3Ehf4xcVoHGN8nxlr4wMLo_fXfxlpwMgWU5it/exec";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAdminData();
+            loadMenuForManager();
+        });
+
+        function switchTab(tab) {
+            ['orders', 'debts', 'menuManager'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.toggle("hidden", t !== tab);
+                document.getElementById(`tab-${t}`).className = t === tab ? "pb-2 border-b-2 border-amber-500 font-bold text-amber-500 text-sm" : "pb-2 border-b-2 border-transparent text-slate-400 text-sm";
+            });
+        }
+
+        async function loadAdminData() {
+            try {
+                const res = await fetch(adminSheetUrl + "?action=getData");
+                const data = await res.json();
+                if (data.result === "success") {
+                    renderOrders(data.orders);
+                    renderDebts(data.orders);
+                }
+            } catch (e) {
+                console.error("Data Load Error:", e);
+            }
+        }
+
+        async function loadMenuForManager() {
+            try {
+                const res = await fetch(adminSheetUrl + "?action=getMenu");
+                const data = await res.json();
+                if (data.result === "success" && data.menu) {
+                    renderMenuManager(data.menu);
+                }
+            } catch (e) {
+                console.error("Menu Load Error:", e);
+            }
+        }
+
+        function renderOrders(orders) {
+            const tbody = document.getElementById("ordersTable");
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">အော်ဒါ မရှိသေးပါ။</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = orders.map(o => `
+                <tr class="hover:bg-slate-750">
+                    <td class="p-3">${o.date}</td>
+                    <td class="p-3 font-mono">${o.orderId}</td>
+                    <td class="p-3 font-bold text-amber-300">${o.customer}</td>
+                    <td class="p-3">${o.room}</td>
+                    <td class="p-3">${o.items}</td>
+                    <td class="p-3 font-bold text-amber-400">${o.total} THB</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-[10px] font-bold ${o.paymentType === 'အကြွေး' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-green-500/20 text-green-400 border border-green-500/30'}">
+                            ${o.paymentType || 'လက်ငင်း'}
+                        </span>
+                    </td>
+                    <td class="p-3">${o.note || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderDebts(orders) {
+            const debtMap = {};
+            if (orders) {
+                orders.forEach(o => {
+                    if (o.paymentType === 'အကြွေး') {
+                        if (!debtMap[o.customer]) debtMap[o.customer] = { room: o.room, totalDebt: 0, count: 0 };
+                        debtMap[o.customer].totalDebt += Number(o.total) || 0;
+                        debtMap[o.customer].count += 1;
+                    }
+                });
+            }
+            const grid = document.getElementById("debtCardsGrid");
+            const keys = Object.keys(debtMap);
+            if (keys.length === 0) {
+                grid.innerHTML = `<p class="text-xs text-slate-500">အကြွေးကျန်ရှိသော ဝယ်သူ မရှိသေးပါ</p>`;
+                return;
+            }
+            grid.innerHTML = keys.map(cust => `
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center shadow-md">
+                    <div>
+                        <h3 class="font-bold text-amber-400 text-sm">ကုဒ်/အမည်: ${cust}</h3>
+                        <p class="text-xs text-slate-400">အခန်း: ${debtMap[cust].room}</p>
+                        <p class="text-xs text-slate-400">အကြွေးဝယ်ယူမှု အကြိမ်ရေ: ${debtMap[cust].count} ကြိမ်</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">စုစုပေါင်း အကြွေး</span>
+                        <span class="text-xl font-extrabold text-red-400">${debtMap[cust].totalDebt.toLocaleString()} THB</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMenuManager(menus) {
+            const tbody = document.getElementById("menuManageTable");
+            tbody.innerHTML = menus.map(m => `
+                <tr class="menu-row">
+                    <td class="p-2">
+                        <input type="checkbox" class="menu-status w-4 h-4 accent-green-600" ${m.status !== false ? 'checked' : ''}> ဖွင့်မည်
+                    </td>
+                    <td class="p-2"><input type="text" value="${m.code}" class="menu-code bg-slate-700 px-2 py-1 rounded w-16 text-white text-xs"></td>
+                    <td class="p-2"><input type="text" value="${m.name}" class="menu-name bg-slate-700 px-2 py-1 rounded w-36 text-white text-xs"></td>
+                    <td class="p-2"><input type="number" value="${m.price}" class="menu-price bg-slate-700 px-2 py-1 rounded w-20 text-white text-xs"></td>
+                    <td class="p-2">
+                        <input type="file" accept="image/*" class="menu-image-file text-xs text-slate-300 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-900 hover:file:bg-amber-600">
+                        <input type="hidden" class="menu-image-url" value="${m.image || ''}">
+                        ${m.image ? '<span class="text-[10px] text-green-400 block mt-1">ပုံရှိပြီးသားဖြစ်သည်</span>' : ''}
+                    </td>
+                    <td class="p-2"><input type="text" value="${m.tag || ''}" class="menu-tag bg-slate-700 px-2 py-1 rounded w-24 text-white text-xs"></td>
+                </tr>
+            `).join('');
+        }
+
+        function addNewMenuRow() {
+            const tbody = document.getElementById("menuManageTable");
+            const row = document.createElement("tr");
+            row.className = "menu-row";
+            row.innerHTML = `
+                <td class="p-2">
+                    <input type="checkbox" class="menu-status w-4 h-4 accent-green-600" checked> ဖွင့်မည်
+                </td>
+                <td class="p-2"><input type="text" placeholder="016" class="menu-code bg-slate-700 px-2 py-1 rounded w-16 text-white text-xs"></td>
+                <td class="p-2"><input type="text" placeholder="ဟင်းမည်" class="menu-name bg-slate-700 px-2 py-1 rounded w-36 text-white text-xs"></td>
+                <td class="p-2"><input type="number" placeholder="ဈေးနှုန်း" class="menu-price bg-slate-700 px-2 py-1 rounded w-20 text-white text-xs"></td>
+                <td class="p-2">
+                    <input type="file" accept="image/*" class="menu-image-file text-xs text-slate-300 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-900 hover:file:bg-amber-600">
+                    <input type="hidden" class="menu-image-url" value="">
+                </td>
+                <td class="p-2"><input type="text" placeholder="Tag" class="menu-tag bg-slate-700 px-2 py-1 rounded w-24 text-white text-xs"></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        async function saveMenuToSheet() {
+            const rows = document.querySelectorAll(".menu-row");
+            const menus = [];
+            let processed = 0;
+
+            if (rows.length === 0) return alert("သိမ်းဆည်းမည့် မီနူး မရှိသေးပါ။");
+
+            rows.forEach((r, index) => {
+                const fileInput = r.querySelector(".menu-image-file");
+                const existingImage = r.querySelector(".menu-image-url").value;
+                
+                const menuData = {
+                    status: r.querySelector(".menu-status").checked,
+                    code: r.querySelector(".menu-code").value,
+                    name: r.querySelector(".menu-name").value,
+                    price: Number(r.querySelector(".menu-price").value) || 0,
+                    tag: r.querySelector(".menu-tag").value,
+                    image: existingImage
+                };
+
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        menuData.image = e.target.result;
+                        menus[index] = menuData;
+                        processed++;
+                        checkFinish();
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                } else {
+                    menus[index] = menuData;
+                    processed++;
+                    checkFinish();
+                }
+            });
+
+            async function checkFinish() {
+                if (processed === rows.length) {
+                    try {
+                        await fetch(adminSheetUrl, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ type: "saveMenu", menus: menus })
+                        });
+                        alert("Google Sheet သို့ ဖိုင်ပုံနှင့် မီနူးများ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
+                    } catch (e) {
+                        console.error(e);
+                        alert("သိမ်းဆည်းမှု မအောင်မြင်ပါ။");
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
